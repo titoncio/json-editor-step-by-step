@@ -10,14 +10,12 @@ import {
 } from '@contentful/forma-36-react-components';
 import tokens from '@contentful/forma-36-tokens';
 import { FieldExtensionSDK } from '@contentful/app-sdk';
-import { v4 as uuid } from 'uuid';
 
 interface FieldProps {
     sdk: FieldExtensionSDK;
 }
 
 interface Step {
-    id: string;
     icon: string;
     title: string;
     description: string;
@@ -25,7 +23,6 @@ interface Step {
 
 function createStep(): Step {
     return {
-        id: uuid(),
         icon: '',
         title: '',
         description: ''
@@ -49,34 +46,34 @@ const Field = (props: FieldProps) => {
         props.sdk.field.setValue([...steps, createStep()]);
     };
 
-    const createOnChangeHandler = (step: Step, property: 'icon' | 'title' | 'description') => (
+    const createOnChangeHandler = (index: number, step: Step, property: 'icon' | 'title' | 'description') => (
         e: React.ChangeEvent<HTMLInputElement>
     ) => {
         const stepList = steps.concat();
-        const index = stepList.findIndex((i) => i.id === step.id);
 
         stepList.splice(index, 1, { ...step, [property]: e.target.value });
 
         props.sdk.field.setValue(stepList);
     };
 
-    const deleteStep = (step: Step) => {
-        props.sdk.field.setValue(steps.filter((i) => i.id !== step.id));
+    const deleteStep = (index: number) => {
+        steps.splice(index, 1)
+        props.sdk.field.setValue(steps);
     };
 
     return (
         <div>
             <Table>
                 <TableBody>
-                    {steps.map((step) => (
-                        <TableRow key={step.id}>
+                    {steps.map((step, index) => (
+                        <TableRow key={index}>
                             <TableCell>
                                 <TextField
                                     id="icon"
                                     name="icon"
                                     labelText="Icon Name"
                                     value={step.icon}
-                                    onChange={createOnChangeHandler(step, 'icon')}
+                                    onChange={createOnChangeHandler(index, step, 'icon')}
                                 />
                             </TableCell>
                             <TableCell>
@@ -85,7 +82,7 @@ const Field = (props: FieldProps) => {
                                     name="title"
                                     labelText="Step Title"
                                     value={step.title}
-                                    onChange={createOnChangeHandler(step, 'title')}
+                                    onChange={createOnChangeHandler(index, step, 'title')}
                                 />
                             </TableCell>
                             <TableCell>
@@ -94,14 +91,14 @@ const Field = (props: FieldProps) => {
                                     name="description"
                                     labelText="Step Description"
                                     value={step.description}
-                                    onChange={createOnChangeHandler(step, 'description')}
+                                    onChange={createOnChangeHandler(index, step, 'description')}
                                 />
                             </TableCell>
                             <TableCell align="right">
                                 <EditorToolbarButton
                                     label="delete"
                                     icon="Delete"
-                                    onClick={() => deleteStep(step)}
+                                    onClick={() => deleteStep(index)}
                                 />
                             </TableCell>
                         </TableRow>
